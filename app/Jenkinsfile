@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+  environment {
+    DOCKER_BUILDKIT = '1'
+  }
+  stages {
+    stage('Build JAR') {
+      steps {
+        sh './mvnw clean package -DskipTests'
+      }
+    }
+
+    stage('Build Docker Image if Not Exists') {
+      steps {
+        script {
+          def imageExists = sh(script: "docker images -q java-app-image", returnStdout: true).trim()
+          if (!imageExists) {
+            echo "Image not found. Building new image..."
+            sh 'docker build -t java-app-image ../app'
+          } else {
+            echo "Using cached image: java-app-image"
+          }
+        }
+      }
+    }
+
+    stage('Deploy to Non-Prod') {
+      when { branch 'dev' }
+      steps {
+        sh 'docker ps -q -f name=non-prod || docker-compose -f ../deploy/docker-compose.nonprod.yml up -d'
+      }
+    }
+
+    stage('Deploy to Prod') {
+      when { branch 'main' }
+      steps {
+        sh 'docker ps -q -f name=prod || docker-compose -f ../deploy/docker-compose.prod.yml up -d'
+      }
+    }
+  }
+}

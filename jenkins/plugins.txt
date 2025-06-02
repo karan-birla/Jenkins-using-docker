@@ -1,0 +1,8 @@
+workflow-aggregator
+pipeline-stage-view
+docker-workflow
+git
+configuration-as-code
+blueocean
+github-branch-source
+job-dsl
