@@ -25,7 +25,9 @@ pipeline {
           def imageExists = sh(script: "docker images -q java-app-image", returnStdout: true).trim()
           if (!imageExists) {
             echo "Image not found. Building new image..."
-            sh 'docker build -t java-app-image ../app'
+            dir('app') {
+              sh 'docker build -t java-app-image .'
+            }
           } else {
             echo "Using cached image: java-app-image"
           }
