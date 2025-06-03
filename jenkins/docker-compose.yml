@@ -4,7 +4,7 @@ services:
     build: .
     container_name: jenkins
     ports:
-      - "8080:8080"
+      - "9095:8080"
     volumes:
       - ./jenkins_home:/var/jenkins_home
       - ./jenkins.yaml:/var/jenkins_home/casc.yaml
@@ -14,6 +14,9 @@ services:
       - .env
     environment:
       - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
-
-volumes:
-  jenkins_home:
+      - JENKINS_OPTS=--httpPort=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

@@ -9,6 +9,9 @@ jenkins:
   authorizationStrategy:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: false
+  numExecutors: 2
+  scmCheckoutRetryCount: 3
+  mode: NORMAL
 
 credentials:
   system:
@@ -21,8 +24,12 @@ credentials:
 
 unclassified:
   githubConfiguration:
-    configs:
+    endpoints:
       - name: "GitHub"
-        apiUrl: "https://api.github.com"
-        credentialsId: "github-token"
-        manageHooks: true
+        apiUri: "https://api.github.com"
+
+tool:
+  git:
+    installations:
+      - name: Default
+        home: git
