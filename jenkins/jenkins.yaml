@@ -1,0 +1,35 @@
+jenkins:
+  systemMessage: "Jenkins configured via code"
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: admin
+          password: admin
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+  numExecutors: 2
+  scmCheckoutRetryCount: 3
+  mode: NORMAL
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              id: "github-token"
+              description: "GitHub Personal Access Token"
+              secret: "${GITHUB_PAT}"
+
+unclassified:
+  githubConfiguration:
+    endpoints:
+      - name: "GitHub"
+        apiUri: "https://api.github.com"
+
+tool:
+  git:
+    installations:
+      - name: Default
+        home: git

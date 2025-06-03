@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  jenkins:
+    build: .
+    container_name: jenkins
+    ports:
+      - "9095:8080"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
+      - ./jenkins.yaml:/var/jenkins_home/casc.yaml
+      - ./init.groovy.d:/var/jenkins_home/init.groovy.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    env_file:
+      - .env
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc.yaml
+      - JENKINS_OPTS=--httpPort=8080
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 5

@@ -1,0 +1,10 @@
+# Jenkins data
+jenkins/jenkins_home/
+# Build output
+target/
+# IDE files
+*.iml
+.idea/
+# Secrets and environment
+.env
+lib

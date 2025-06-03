@@ -1,0 +1,11 @@
+version: '3'
+services:
+  nonprod:
+    build:
+      context: ../app
+      dockerfile: Dockerfile
+    image: java-app-image
+    container_name: non-prod
+    ports:
+      - "3001:8080"
+    restart: unless-stopped
