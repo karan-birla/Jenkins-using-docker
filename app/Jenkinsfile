@@ -3,7 +3,21 @@ pipeline {
   environment {
     DOCKER_BUILDKIT = '1'
   }
+  options {
+    skipDefaultCheckout true
+  }
   stages {
+    stage('Checkout') {
+      steps {
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: '*/main']],
+          userRemoteConfigs: [[url: 'https://github.com/karan-birla/Jenkins-using-docker']],
+          extensions: [[$class: 'CleanBeforeCheckout']]
+        ])
+      }
+    }
+
     stage('Build JAR') {
       agent {
         docker {
@@ -37,28 +51,48 @@ pipeline {
 
     stage('Deploy to Non-Prod') {
       when { 
-        not { branch 'main' }
+        expression { 
+          return env.BRANCH_NAME != 'main' || env.BRANCH_NAME == null 
+        }
       }
       agent any
       steps {
         script {
           echo "Current branch: ${env.BRANCH_NAME}"
           echo "Deploying to non-prod environment..."
-          sh 'docker ps -q -f name=non-prod || docker-compose -f ../deploy/docker-compose.nonprod.yml up -d'
+          sh '''
+            if ! docker ps -q -f name=non-prod; then
+              docker-compose -f ../deploy/docker-compose.nonprod.yml up -d
+              sleep 10
+              docker ps | grep non-prod
+            else
+              echo "Non-prod container already running"
+            fi
+          '''
         }
       }
     }
 
     stage('Deploy to Prod') {
       when { 
-        branch 'main'
+        expression { 
+          return env.BRANCH_NAME == 'main' 
+        }
       }
       agent any
       steps {
         script {
           echo "Current branch: ${env.BRANCH_NAME}"
           echo "Deploying to production environment..."
-          sh 'docker ps -q -f name=prod || docker-compose -f ../deploy/docker-compose.prod.yml up -d'
+          sh '''
+            if ! docker ps -q -f name=prod; then
+              docker-compose -f ../deploy/docker-compose.prod.yml up -d
+              sleep 10
+              docker ps | grep prod
+            else
+              echo "Prod container already running"
+            fi
+          '''
         }
       }
     }
