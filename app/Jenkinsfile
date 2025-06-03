@@ -5,12 +5,19 @@ pipeline {
   }
   stages {
     stage('Build JAR') {
+      agent {
+        docker {
+          image 'maven:3.9.6-eclipse-temurin-17'
+          args '-v $HOME/.m2:/root/.m2'
+        }
+      }
       steps {
         sh 'mvn clean package -DskipTests'
       }
     }
 
     stage('Build Docker Image if Not Exists') {
+      agent any
       steps {
         script {
           def imageExists = sh(script: "docker images -q java-app-image", returnStdout: true).trim()
@@ -26,6 +33,7 @@ pipeline {
 
     stage('Deploy to Non-Prod') {
       when { branch 'dev' }
+      agent any
       steps {
         sh 'docker ps -q -f name=non-prod || docker-compose -f ../deploy/docker-compose.nonprod.yml up -d'
       }
@@ -33,6 +41,7 @@ pipeline {
 
     stage('Deploy to Prod') {
       when { branch 'main' }
+      agent any
       steps {
         sh 'docker ps -q -f name=prod || docker-compose -f ../deploy/docker-compose.prod.yml up -d'
       }
