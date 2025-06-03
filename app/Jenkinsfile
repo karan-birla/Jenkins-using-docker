@@ -36,18 +36,30 @@ pipeline {
     }
 
     stage('Deploy to Non-Prod') {
-      when { branch 'dev' }
+      when { 
+        not { branch 'main' }
+      }
       agent any
       steps {
-        sh 'docker ps -q -f name=non-prod || docker-compose -f ../deploy/docker-compose.nonprod.yml up -d'
+        script {
+          echo "Current branch: ${env.BRANCH_NAME}"
+          echo "Deploying to non-prod environment..."
+          sh 'docker ps -q -f name=non-prod || docker-compose -f ../deploy/docker-compose.nonprod.yml up -d'
+        }
       }
     }
 
     stage('Deploy to Prod') {
-      when { branch 'main' }
+      when { 
+        branch 'main'
+      }
       agent any
       steps {
-        sh 'docker ps -q -f name=prod || docker-compose -f ../deploy/docker-compose.prod.yml up -d'
+        script {
+          echo "Current branch: ${env.BRANCH_NAME}"
+          echo "Deploying to production environment..."
+          sh 'docker ps -q -f name=prod || docker-compose -f ../deploy/docker-compose.prod.yml up -d'
+        }
       }
     }
   }
